@@ -218,20 +218,13 @@ td { vertical-align: top; }
    Author:
    ========================================================================== */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.reklama_endora{
+    font-size: 70%;
+    color: #757575;
+    margin-top: 2px;
+    margin-bottom: 3px;
+    text-float: center;
+}
 
 /* ==|== media queries ======================================================
    EXAMPLE Media Query for Responsive Design.
