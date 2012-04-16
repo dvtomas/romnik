@@ -13,7 +13,7 @@
  More info: h5bp.com/i/378 -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-    <title>Hello, world!</title>
+    <title>Romsko-český slovník</title>
     <meta name="description" content="">
 
     <!-- Mobile viewport optimized: h5bp.com/viewport -->
@@ -21,6 +21,14 @@
 
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory: mathiasbynens.be/notes/touch-icons -->
 
+    <!-- Blueprint CSS -->
+    <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection">
+    <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print">
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
+
+    <!-- Import fancy-type plugin for the sample page. -->
+    <link rel="stylesheet" href="/css/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
     <link rel="stylesheet" href="../css/style.css">
 
     <!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->
@@ -39,12 +47,51 @@ chromium.org/developers/how-tos/chrome-frame-getting-started -->
 <header>
 
 </header>
-<div role="main">
+<div class="container" role="main">
+    <h1>Romsko-český slovník</h1>
     <?php
     include("lib/common.php");
-    d(getMySQLConnection());
-    echo "<br />-o-<br />"
-    ?>
+    getMySQLConnection();
+    if (isset($_GET["q"]))
+        $query = trim($_GET["q"]);
+    else
+        $query = "";
+
+    echo '
+    <FORM METHOD=GET ACTION="index.php">
+    <em>Vyhledat ve slovníku: </em><INPUT TYPE="text" NAME="q" SIZE="30" VALUE="' . $query . '">
+    <INPUT TYPE="submit" VALUE="Hledat">
+    </FORM>
+    ';
+
+    if (isset($_GET["q"])) {
+        if ($query == "")
+            warn("Je třeba vyplnit hledané slovo.");
+        else {
+            $sql = "SELECT PARAGRAPH FROM PARAGRAPHS, WORDS WHERE PARAGRAPH_ID = PARAGRAPHS.ID AND ASCII LIKE '" .
+                mysql_real_escape_string(utf8ToAscii($query)) . "%'";
+            $result = mysql_query_or_die($sql);
+            echo "<p /> <h2>Výsledky vyhledávání</h2><p />";
+            $result_index = 0;
+            while ($row = mysql_fetch_assoc($result)) {
+                $result_index++;
+                echo "<hr />";
+                echo $result_index . ".";
+                echo $row["PARAGRAPH"];
+                echo "<p />\n";
+            }
+            mysql_free_result($result);
+            if ($result_index == 0) {
+                warn("Pro zadaný výraz nebyly nalezeny žádné výsledky.");
+            }
+        }
+    }
+?>
+    <div class="reklama_endora">
+        <hr/>
+        <endora/>
+    </div>
+
 </div>
 <footer>
 

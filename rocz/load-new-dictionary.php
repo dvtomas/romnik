@@ -28,8 +28,7 @@
     <link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
 
     <!-- Import fancy-type plugin for the sample page. -->
-    <link rel="stylesheet" href="/css/blueprint/plugins/fancy-type/screen.css" type="text/css"
-          media="screen, projection">
+    <link rel="stylesheet" href="/css/blueprint/plugins/fancy-type/screen.css" type="text/css" media="screen, projection">
     <link rel="stylesheet" href="../css/style.css">
 
     <!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->
