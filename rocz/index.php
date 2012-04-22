@@ -74,7 +74,7 @@
             warn("Je třeba vyplnit hledané slovo.");
         else {
             getMySQLConnection();
-            $sql = "SELECT PARAGRAPH FROM PARAGRAPHS, WORDS WHERE PARAGRAPH_ID = PARAGRAPHS.ID AND ASCII LIKE '" .
+            $sql = "SELECT DISTINCT PARAGRAPH FROM PARAGRAPHS, WORDS WHERE PARAGRAPH_ID = PARAGRAPHS.ID AND ASCII LIKE '" .
                 mysql_real_escape_string(utf8ToAscii($query)) . "%' AND (";
             $selectedVariantsExpressions = array();
             foreach ($selectedVariants as $variant)

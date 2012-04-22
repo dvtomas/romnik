@@ -2,12 +2,12 @@
 include_once("common.php");
 
 // result of the export
-$wordsAndVariants = array();
 $paragraphs = array();
+$words = array();
 
 // Helper variables. Yup, global variables are ugly, but I try to keep the whole thing as simple
 $currentParagraphIndex = 0;
-$lastWord = NULL;
+
 
 function getTranslationParagraphs($document)
 {
@@ -21,43 +21,32 @@ function getTranslationParagraphs($document)
     return $result;
 }
 
+function addWord($word) {
+    global $currentParagraphIndex;
+    global $words;
+    $words[] = array(
+        "word" => $word,
+        "ascii" => utf8ToAscii($word),
+        "paragraph_id" => $currentParagraphIndex
+    );
+}
+
 function traverseTranslationParagraph($node)
 {
     global $allVariants;
     global $lastWord;
     global $wordsAndVariants;
-    global $currentParagraphIndex;
+    $currentWordAndTranslations = array();
 
     if ($node instanceof DOMText) {
     }
     else {
-        if ($node->getAttribute("style") == "color:#000070;") {
-            $currentWord = $node->nodeValue;
-            if (!is_null($lastWord)) {
-                warn("Poslední slovo nemělo žádné variety a nebude zaindexováno. Poslední slovo = " . $lastWord . ", současné slovo = " . $currentWord . "<br />");
-            }
-            $lastWord = $currentWord;
+        if ($node->getAttribute("style") == "color:#0080C0;") {
+            addWord($node->nodeValue);
         }
-        elseif (endsWith($node->getAttribute("style"), "font-size:8pt;")) {
-            if (!is_null($lastWord)) {
-                $raw_variants = preg_split("/[  ]/", $node->nodeValue); // ordinary and non-breakable space
-                $variants = array();
-                foreach ($raw_variants as $raw_variant) {
-                    $variant = trim($raw_variant, "  "); // The last space is actualy U+00A0, nbsp
-                    if ($variant == "")
-                        continue;
-                    if (!in_array($variant, $allVariants))
-                        warn("Neznámá varieta '" . $variant . "' ve slově '" . $lastWord . "'.");
-                    else
-                        $variants[] = $variant;
-                }
-                $wordsAndVariants[] = array(
-                    "word" => $lastWord,
-                    "ascii" => utf8ToAscii($lastWord),
-                    "paragraph_id" => $currentParagraphIndex,
-                    "variants" => $variants);
-                $lastWord = NULL;
-            }
+        elseif (endsWith($node->getAttribute("style"), "color:#DD0000;")) {
+            foreach(explode(",", $node->nodeValue) as $rawTranslation)
+                addWord(trim($rawTranslation));
         }
         $children = $node->childNodes;
         if (!is_null($children)) {
@@ -92,15 +81,11 @@ function parseDictionaryFile($filename)
 
 function dumpParseResult()
 {
-    global $dictionaryFile;
-    global $allVariants;
-    global $wordsAndVariants;
     global $paragraphs;
+    global $words;
 
-    echo "<h3>Definované variety</h3>";
-    d($allVariants);
     echo "<h3>Naindexované položky pro vyhledávání</h3>";
-    d($wordsAndVariants);
+    d($words);
     echo "<h3>Přeložené texty</h3>";
     d($paragraphs);
 }
@@ -108,8 +93,7 @@ function dumpParseResult()
 function populateDatabase()
 {
     global $paragraphs;
-    global $wordsAndVariants;
-    global $allVariants;
+    global $words;
 
     $connection = getMySQLConnection();
 
@@ -130,40 +114,25 @@ function populateDatabase()
 
     // WORDS AND VARIANTS
     mysql_query("DROP TABLE WORDS");
-    function variantToVariantDefinition($variant)
-    {
-        return $variant . " BOOLEAN ";
-    }
-
-    ;
     $sql = "
         CREATE TABLE WORDS
         (
           WORD VARCHAR(100),
           ASCII VARCHAR(100),
-          PARAGRAPH_ID INTEGER,
-          " . implode(", ", array_map("variantToVariantDefinition", $allVariants)) . "
+          PARAGRAPH_ID INTEGER
         )";
     mysql_query_or_die($sql);
-    foreach ($wordsAndVariants as $wordAndVariants) {
-        $variantValues = array();
-        foreach ($allVariants as $variant) {
-            if (in_array($variant, $wordAndVariants["variants"]))
-                $variantValues[] = "1";
-            else
-                $variantValues[] = "0";
-        }
+    foreach ($words as $word) {
         $sql = "INSERT INTO WORDS VALUES('" .
-            mysql_real_escape_string($wordAndVariants["word"]) . "', '" .
-            mysql_real_escape_string($wordAndVariants["ascii"]) . "', " .
-            mysql_real_escape_string($wordAndVariants["paragraph_id"]) . ", " .
-            implode(", ", $variantValues) .
+            mysql_real_escape_string($word["word"]) . "', '" .
+            mysql_real_escape_string($word["ascii"]) . "', " .
+            mysql_real_escape_string($word["paragraph_id"]) .
             ")";
 
         mysql_query_or_die($sql);
     }
-
-    /*    $result = mysql_query_or_die("SELECT * FROM WORDS");
+/*
+    $result = mysql_query_or_die("SELECT * FROM WORDS");
     while ($row = mysql_fetch_assoc($result))
         d($row);
     mysql_free_result($result);*/
