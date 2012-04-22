@@ -29,4 +29,10 @@ function warn($message) {
     echo '<div class="error">' . $message . "</div><br />";
 }
 
+function mysql_query_or_die($sql) {
+    $result = mysql_query($sql);
+    if (!$result) die("Chyba při vykonávání sql " . $sql . ": " . mysql_error());
+    return $result;
+}
+
 ?>

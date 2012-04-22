@@ -18,15 +18,9 @@ foreach($variant_definitions as $variant) {
 $dictionaryFile="dictionary.html";
 
 function getMySQLConnection() {
-    $connection = mysql_connect('localhost', 'romni1334146623', 'ablaka');
-    mysql_select_db("romni1334146623");
+    $connection = mysql_connect('localhost', 'romnik', 'ablaka');
+    mysql_select_db("ro2cz");
     return $connection;
-}
-
-function mysql_query_or_die($sql) {
-    $result = mysql_query($sql);
-    if (!$result) die("Chyba při vykonávání sql " . $sql . ": " . mysql_error());
-    return $result;
 }
 
 ?>
