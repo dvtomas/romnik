@@ -11,6 +11,14 @@
     global $allVariantGroups;
     global $allVariants;
 
+    $selectedVariants = array();
+    foreach($allVariants as $variant) {
+        if (isset($_GET[$variant]))
+            $selectedVariants[] = $variant;
+    }
+    if (empty($selectedVariants)) // If no variant is selected, treat the query as if all variants were selected.
+        $selectedVariants = $allVariants;
+
     function generateCheckVariantsButton($name, $id, $variantsToCheck) {
         global $allVariants;
         $function_name = 'button_check_' . $id;
@@ -46,7 +54,7 @@
         generateCheckVariantsButton($variantGroup[0][0], $variantGroup[0][0], $variantGroup);
         echo " ";
         foreach ($variantGroup as $variant) {
-            if (isset($_GET["$variant"]))
+            if (in_array($variant, $selectedVariants))
                 $checked = 'checked="checked"';
             else
                 $checked = "";
@@ -60,14 +68,6 @@
     echo '
     </FORM>
     ';
-
-    $selectedVariants = array();
-    foreach($allVariants as $variant) {
-        if (isset($_GET[$variant]))
-            $selectedVariants[] = $variant;
-    }
-    if (empty($selectedVariants)) // If no variant is selected, treat the query as if all variants were selected.
-        $selectedVariants = $allVariants;
 
     if (isset($_GET["q"])) {
         if ($query == "")
